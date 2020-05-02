@@ -11,6 +11,7 @@ use Doctrine\Bundle\MongoDBBundle\DependencyInjection\Compiler\ServiceRepository
 use Doctrine\Bundle\MongoDBBundle\DependencyInjection\DoctrineMongoDBExtension;
 use Doctrine\ODM\MongoDB\Configuration;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use Doctrine\ODM\MongoDB\Types\Type;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\DoctrineValidationPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\CompilerPass\RegisterEventListenersAndSubscribersPass;
 use Symfony\Bridge\Doctrine\DependencyInjection\Security\UserProvider\EntityFactory;
@@ -51,6 +52,8 @@ class DoctrineMongoDBBundle extends Bundle
 
     public function boot()
     {
+        $this->registerTypes();
+
         /** @var ManagerRegistry $registry */
         $registry = $this->container->get('doctrine_mongodb');
 
@@ -90,6 +93,23 @@ class DoctrineMongoDBBundle extends Bundle
     {
         $commandLoggerRegistry = $this->container->get('doctrine_mongodb.odm.command_logger_registry');
         $commandLoggerRegistry->unregister();
+    }
+
+    private function registerTypes() : void
+    {
+        if (! $this->container->hasParameter('doctrine_mongodb.odm.types')) {
+            // no types defined
+            exit;
+        }
+
+        $types = $this->container->getParameter('doctrine_mongodb.odm.types');
+        foreach ($types as $key => $fqcn) {
+            if (Type::hasType($key)) {
+                Type::overrideType($key, $fqcn);
+            } else {
+                Type::addType($key, $fqcn);
+            }
+        }
     }
 
     public function shutdown()

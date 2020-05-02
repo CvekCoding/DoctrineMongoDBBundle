@@ -39,6 +39,7 @@ class Configuration implements ConfigurationInterface
         $this->addDocumentManagersSection($rootNode);
         $this->addConnectionsSection($rootNode);
         $this->addResolveTargetDocumentsSection($rootNode);
+        $this->addCustomTypesSection($rootNode);
 
         $rootNode
             ->children()
@@ -348,6 +349,23 @@ class Configuration implements ConfigurationInterface
                 ->arrayNode('resolve_target_documents')
                     ->useAttributeAsKey('interface')
                     ->prototype('scalar')
+                        ->cannotBeEmpty()
+                    ->end()
+                ->end()
+            ->end();
+    }
+
+    /**
+     * Adds the "types" config section.
+     */
+    private function addCustomTypesSection(ArrayNodeDefinition $rootNode)
+    {
+        $rootNode
+            ->fixXmlConfig('type')
+            ->children()
+                ->arrayNode('types')
+                    ->useAttributeAsKey('name')
+                    ->scalarPrototype()
                         ->cannotBeEmpty()
                     ->end()
                 ->end()
